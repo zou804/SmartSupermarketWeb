@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能超市销售分析系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 智能超市销售分析系统</h1>
+            <p class="subtitle">基于DeepSeek AI的智能分析平台</p>
+        </header>
+
+        <nav class="navigation">
+            <button class="nav-btn active" data-section="dashboard">
+                📊 数据概览
+            </button>
+            <button class="nav-btn" data-section="products">
+                📦 商品管理
+            </button>
+            <button class="nav-btn" data-section="member">
+                👥 会员管理
+            </button>
+            <button class="nav-btn" data-section="sale">
+                💰 收银结账
+            </button>
+            <button class="nav-btn" data-section="query">
+                📈 销售查询
+            </button>
+            <button class="nav-btn" data-section="analysis">
+                🤖 AI分析
+            </button>
+        </nav>
+
+        <main>
+            <section id="dashboard" class="section active">
+                <h2>📊 数据概览</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <h3 id="totalAmount">¥0.00</h3>
+                            <p>总销售额</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🧾</div>
+                        <div class="stat-info">
+                            <h3 id="totalSales">0</h3>
+                            <p>总订单数</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <h3 id="totalItems">0</h3>
+                            <p>商品总数</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="memberCount">0</h3>
+                            <p>会员总数</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>📈 销售趋势</h3>
+                    <div id="salesChart" class="chart"></div>
+                </div>
+
+                <div class="recent-orders">
+                    <h3>🕐 最近订单</h3>
+                    <div id="recentOrdersList"></div>
+                </div>
+            </section>
+
+            <section id="products" class="section">
+                <h2>📦 商品管理</h2>
+                
+                <div class="form-card">
+                    <h3>添加新商品</h3>
+                    <form id="productForm">
+                        <div class="form-group">
+                            <label for="productNameAdd">商品名称:</label>
+                            <div style="display:flex;gap:10px;">
+                                <input type="text" id="productNameAdd" style="flex:1;" required>
+                                <button type="button" class="btn-secondary" id="identifyBtn" onclick="identifyProduct()">🤖 AI识别</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">类别:</label>
+                            <select id="productCategory" required>
+                                <option value="食品">食品</option>
+                                <option value="饮料">饮料</option>
+                                <option value="日用品">日用品</option>
+                                <option value="生鲜">生鲜</option>
+                                <option value="零食">零食</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPriceAdd">售价:</label>
+                            <input type="number" id="productPriceAdd" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productStock">库存数量:</label>
+                            <input type="number" id="productStock" min="1" value="100">
+                        </div>
+                        <button type="submit" class="btn-primary">添加商品</button>
+                    </form>
+                </div>
+
+                <div class="list-card">
+                    <h3>商品列表</h3>
+                    <div class="filter-bar">
+                        <select id="productFilter" onchange="loadProducts()">
+                            <option value="">全部类别</option>
+                            <option value="食品">食品</option>
+                            <option value="饮料">饮料</option>
+                            <option value="日用品">日用品</option>
+                            <option value="生鲜">生鲜</option>
+                            <option value="零食">零食</option>
+                        </select>
+                    </div>
+                    <div id="productList"></div>
+                </div>
+            </section>
+
+            <!-- 商品详情弹窗 -->
+            <div id="productModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modalTitle">商品详情</h3>
+                        <button class="close-btn" onclick="closeProductModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="product-detail">
+                            <div class="detail-row">
+                                <span class="detail-label">商品ID:</span>
+                                <span id="detailId">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">商品名称:</span>
+                                <span id="detailName">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">类别:</span>
+                                <span id="detailCategory">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">售价:</span>
+                                <span id="detailPrice">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">成本:</span>
+                                <span id="detailCost">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">利润:</span>
+                                <span id="detailProfit">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">利润率:</span>
+                                <span id="detailProfitMargin">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">库存:</span>
+                                <span id="detailStock">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">条形码:</span>
+                                <span id="detailBarcode">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body edit-section" style="display: none;">
+                        <h4>编辑商品信息</h4>
+                        <form id="editProductForm">
+                            <div class="form-group">
+                                <label for="editProductName">商品名称:</label>
+                                <input type="text" id="editProductName">
+                            </div>
+                            <div class="form-group">
+                                <label for="editProductCategory">类别:</label>
+                                <select id="editProductCategory">
+                                    <option value="食品">食品</option>
+                                    <option value="饮料">饮料</option>
+                                    <option value="日用品">日用品</option>
+                                    <option value="生鲜">生鲜</option>
+                                    <option value="零食">零食</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editProductPrice">售价:</label>
+                                <input type="number" id="editProductPrice" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="editProductCost">成本:</label>
+                                <input type="number" id="editProductCost" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="editProductStock">库存:</label>
+                                <input type="number" id="editProductStock" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="editProductBarcode">条形码:</label>
+                                <input type="text" id="editProductBarcode">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-secondary" onclick="toggleEditMode()">编辑</button>
+                        <button class="btn-primary" onclick="saveProductEdit()" style="display: none;">保存</button>
+                        <button class="btn-secondary" onclick="closeProductModal()">关闭</button>
+                    </div>
+                </div>
+            </div>
+
+            <section id="member" class="section">
+                <h2>👥 会员管理</h2>
+                
+                <div class="form-card">
+                    <h3>注册新会员</h3>
+                    <form id="memberForm">
+                        <div class="form-group">
+                            <label for="memberName">姓名:</label>
+                            <input type="text" id="memberName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="memberPhone">电话:</label>
+                            <input type="tel" id="memberPhone" required>
+                        </div>
+                        <button type="submit" class="btn-primary">注册会员</button>
+                    </form>
+                </div>
+
+                <div class="list-card">
+                    <h3>会员列表</h3>
+                    <div id="memberList"></div>
+                </div>
+            </section>
+
+            <section id="sale" class="section">
+                <h2>💰 收银结账</h2>
+                
+                <div class="sale-form">
+                    <div class="member-select">
+                        <label for="saleMemberId">会员编号 (可选):</label>
+                        <input type="text" id="saleMemberId" placeholder="输入会员编号或留空">
+                        <button type="button" class="btn-secondary" onclick="checkMember()">验证会员</button>
+                        <span id="memberStatus"></span>
+                    </div>
+
+                    <div class="product-entry">
+                        <h3>选择商品</h3>
+                        <div class="form-row">
+                            <select id="productSelector" onchange="onProductSelect()">
+                                <option value="">-- 请选择商品 --</option>
+                            </select>
+                            <input type="number" id="productQuantity" placeholder="数量" min="1" value="1">
+                            <button type="button" class="btn-add" onclick="addToCart()">+ 添加到购物车</button>
+                        </div>
+                        <div class="product-search">
+                            <input type="text" id="productSearch" placeholder="搜索商品..." onkeyup="searchProducts()">
+                        </div>
+                    </div>
+
+                    <div class="cart-section">
+                        <h3>购物车</h3>
+                        <div id="cartItems"></div>
+                        <div class="cart-summary">
+                            <div class="summary-row">
+                                <span>原价总计:</span>
+                                <span id="originalTotal">¥0.00</span>
+                            </div>
+                            <div class="summary-row discount" id="discountRow" style="display:none;">
+                                <span>会员折扣 (9折):</span>
+                                <span id="discountAmount">-¥0.00</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>应付金额:</span>
+                                <span id="finalTotal">¥0.00</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-checkout" onclick="processCheckout()">
+                            💳 完成结账
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="query" class="section">
+                <h2>📈 销售查询</h2>
+                
+                <div class="query-options">
+                    <button class="btn-query" onclick="queryTodaySales()">今日销售</button>
+                    <button class="btn-query" onclick="queryAllSales()">全部销售</button>
+                    <div class="date-picker">
+                        <input type="date" id="queryDate">
+                        <button class="btn-query" onclick="queryByDate()">查询指定日期</button>
+                    </div>
+                </div>
+
+                <div class="query-results">
+                    <div id="querySummary"></div>
+                    <div id="queryList"></div>
+                </div>
+            </section>
+
+            <section id="analysis" class="section">
+                <h2>🤖 AI智能分析</h2>
+                
+                <div class="ai-panel">
+                    <div class="ai-info">
+                        <h3>🔍 DeepSeek AI 分析报告</h3>
+                        <p>基于您的销售数据，AI将为您提供：</p>
+                        <ul>
+                            <li>销售趋势分析</li>
+                            <li>经营建议</li>
+                            <li>优化方案</li>
+                            <li>营销策略推荐</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="btn-ai" onclick="performAIAnalysis()">
+                        🚀 启动AI分析
+                    </button>
+
+                    <div id="apiStatus" class="api-status"></div>
+
+                    <div id="aiResults" class="ai-results"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 智能超市销售分析系统 | Powered by DeepSeek AI</p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
